@@ -18,6 +18,46 @@ export async function getAllAlumnos() {
   return data ?? [];
 }
 
+export async function createAlumno(input: AlumnoInput) {
+  const { data, error } = await supabaseServer
+    .from("alumnos")
+    .insert({ nombre: input.nombre, correo: input.correo })
+    .select("id, nombre, correo")
+    .single();
+
+  if (error || !data) {
+    throw new Error(`Error creando alumno: ${error?.message ?? "unknown"}`);
+  }
+
+  return data;
+}
+
+export async function updateAlumno(id: string, input: AlumnoInput) {
+  const { data, error } = await supabaseServer
+    .from("alumnos")
+    .update({ nombre: input.nombre, correo: input.correo })
+    .eq("id", id)
+    .select("id, nombre, correo")
+    .single();
+
+  if (error || !data) {
+    throw new Error(`Error actualizando alumno: ${error?.message ?? "unknown"}`);
+  }
+
+  return data;
+}
+
+export async function deleteAlumno(id: string) {
+  const { error } = await supabaseServer
+    .from("alumnos")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    throw new Error(`Error eliminando alumno: ${error.message}`);
+  }
+}
+
 export async function findOrCreateAlumno(input: AlumnoInput) {
   const { data: existing, error: findError } = await supabaseServer
     .from("alumnos")
@@ -40,15 +80,5 @@ export async function findOrCreateAlumno(input: AlumnoInput) {
     return existing;
   }
 
-  const { data: created, error: createError } = await supabaseServer
-    .from("alumnos")
-    .insert({ nombre: input.nombre, correo: input.correo })
-    .select("id, nombre, correo")
-    .single();
-
-  if (createError || !created) {
-    throw new Error(`Error creando alumno: ${createError?.message ?? "unknown"}`);
-  }
-
-  return created;
+  return createAlumno(input);
 }

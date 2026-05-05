@@ -5,6 +5,7 @@ import {
   FileText,
   CheckCircle,
   Upload,
+  GraduationCap,
 } from "lucide-react";
 
 import {
@@ -30,13 +31,18 @@ const navItems = [
     url: "/",
     icon: LayoutDashboard,
   },
+    {
+      title: "Alumnos",
+      url: "/tesistas",
+      icon: GraduationCap,
+    },
   {
-    title: "Revisor",
+    title: "Revisor IA",
     url: "/cargar-tesis",
     icon: FileText,
   },
   {
-    title: "Revisados",
+    title: "Tesis revisadas",
     url: "/registros-respuesta",
     icon: CheckCircle,
   },
