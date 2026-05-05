@@ -1,8 +1,18 @@
+"use client";
+
+import { useState, type ChangeEvent } from "react";
 import Link from "next/link";
 
 import { uploadFeatures } from "../application/thesis-review.snapshot";
 
 export function ThesisUploadPage() {
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0] ?? null;
+    setSelectedFile(file);
+  };
+
   return (
     <main className="relative flex-1 overflow-hidden">
       <div className="absolute inset-x-0 top-0 -z-10 h-[28rem] bg-[radial-gradient(circle_at_top,rgba(34,197,94,0.14),transparent_55%)]" />
@@ -38,25 +48,40 @@ export function ThesisUploadPage() {
                 Arrastra tu tesis aqui o selecciona un archivo
               </h2>
               <p className="mt-3 max-w-2xl text-sm leading-7 text-[var(--ink-soft)] sm:text-base">
-                Soporte para PDF y DOCX, con validacion de tamano, extension y estructura minima antes de lanzar el analisis.
+                Soporte para PDF, DOC y DOCX, con validacion de tamano, extension y estructura minima antes de lanzar el analisis.
               </p>
 
               <div className="mt-6 flex flex-wrap gap-3">
-                <button
-                  type="button"
-                  className="rounded-full bg-white px-6 py-3 text-sm font-semibold text-slate-950 transition hover:bg-emerald-50"
+                <input
+                  id="thesis-file"
+                  type="file"
+                  accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                  className="sr-only"
+                  onChange={handleFileChange}
+                />
+                <label
+                  htmlFor="thesis-file"
+                  className="cursor-pointer rounded-full bg-white px-6 py-3 text-sm font-semibold text-slate-950 transition hover:bg-emerald-50"
                 >
                   Elegir archivo
-                </button>
+                </label>
                 <span className="rounded-full border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/70">
                   Maximo sugerido: 25 MB
                 </span>
               </div>
+              {selectedFile ? (
+                <div className="mt-4 rounded-2xl border border-emerald-300/25 bg-emerald-100/10 px-4 py-3 text-sm text-emerald-100">
+                  <p className="font-medium">Archivo seleccionado: {selectedFile.name}</p>
+                  <p className="mt-1 text-emerald-100/80">
+                    Tamano: {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB
+                  </p>
+                </div>
+              ) : null}
 
               <div className="mt-8 grid gap-3 sm:grid-cols-3">
                 <div className="rounded-2xl border border-white/10 bg-slate-950/35 p-4">
                   <p className="text-sm font-semibold text-white">Formatos</p>
-                  <p className="mt-2 text-sm text-[var(--ink-soft)]">PDF y DOCX</p>
+                  <p className="mt-2 text-sm text-[var(--ink-soft)]">PDF, DOC y DOCX</p>
                 </div>
                 <div className="rounded-2xl border border-white/10 bg-slate-950/35 p-4">
                   <p className="text-sm font-semibold text-white">Entrega</p>

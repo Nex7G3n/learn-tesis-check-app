@@ -12,7 +12,7 @@ export const reviewStages: ReviewStage[] = [
     id: "upload",
     title: "Carga segura",
     description:
-      "Sube PDF o DOCX y detecta metadatos, numero de paginas y secciones clave.",
+      "Sube PDF, DOC o DOCX y detecta metadatos, numero de paginas y secciones clave.",
     emphasis: "Arquitectura lista para validar archivos y versionado.",
   },
   {
@@ -70,7 +70,7 @@ export const insightCards: InsightCard[] = [
 export const uploadFeatures: UploadFeature[] = [
   {
     title: "Valida formato y peso",
-    description: "Prepara el front para aceptar PDF y DOCX con reglas claras.",
+    description: "Prepara el front para aceptar PDF, DOC y DOCX con reglas claras.",
   },
   {
     title: "Extrae estructura base",
