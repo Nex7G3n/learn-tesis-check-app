@@ -6,6 +6,7 @@ export async function POST(request: Request) {
   try {
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
+    const tesisId = (formData.get("tesis_id") as string | null) ?? undefined;
 
     if (!file) {
       return NextResponse.json(
@@ -43,6 +44,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       success: true,
       analysis,
+      tesis_id: tesisId,
     });
   } catch (error) {
     console.error("Error en análisis con Gemini:", error);

@@ -47,17 +47,17 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
 
   return (
     <SidebarProvider>
-      <Sidebar className="border-r border-border/50">
-        <SidebarHeader className="px-4 py-5">
+      <Sidebar className="glass-panel border-r border-[var(--line)]">
+        <SidebarHeader className="px-5 py-6">
           <Link href="/" className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--brand)] text-[#06101d] shadow-lg shadow-[var(--brand)]/20">
               <Upload className="h-5 w-5" />
             </div>
             <div className="flex flex-col">
-              <span className="text-sm font-bold leading-none tracking-tight">
+              <span className="text-[15px] font-bold leading-none tracking-tight">
                 Tesis IQ
               </span>
-              <span className="text-[10px] text-muted-foreground leading-none mt-1">
+              <span className="text-[11px] text-[var(--ink-soft)] leading-none mt-1">
                 Sistema de revisión
               </span>
             </div>
@@ -66,39 +66,47 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
 
         <SidebarContent>
           <SidebarGroup>
-            <SidebarGroupLabel className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/80">
+            <SidebarGroupLabel className="text-[11px] font-semibold uppercase tracking-widest text-[var(--ink-soft)]/70 px-5 mb-2">
               Módulos
             </SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {navItems.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <Link href={item.url} className="w-full">
-                      <SidebarMenuButton
-                        isActive={pathname === item.url}
-                        tooltip={item.title}
-                      >
-                        <item.icon className="h-4 w-4" />
-                        <span className="text-sm font-medium">{item.title}</span>
-                      </SidebarMenuButton>
-                    </Link>
-                  </SidebarMenuItem>
-                ))}
+            <SidebarGroupContent className="px-3">
+              <SidebarMenu className="gap-1">
+                {navItems.map((item) => {
+                  const isActive = pathname === item.url;
+                  return (
+                    <SidebarMenuItem key={item.title}>
+                      <Link href={item.url} className="w-full">
+                        <SidebarMenuButton
+                          isActive={isActive}
+                          tooltip={item.title}
+                          className={`h-10 rounded-xl transition-all duration-200 ${
+                            isActive
+                              ? "bg-[var(--brand)]/15 text-[var(--brand)] shadow-sm"
+                              : "text-[var(--ink-soft)] hover:bg-white/5 hover:text-white"
+                          }`}
+                        >
+                          <item.icon className="h-[18px] w-[18px]" />
+                          <span className="text-sm font-medium">{item.title}</span>
+                        </SidebarMenuButton>
+                      </Link>
+                    </SidebarMenuItem>
+                  );
+                })}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
         </SidebarContent>
 
-        <SidebarFooter className="border-t border-border/50 p-4">
-          <div className="flex items-center gap-3">
-            <Avatar className="h-8 w-8">
-              <AvatarFallback className="bg-secondary text-secondary-foreground text-xs font-bold">
+        <SidebarFooter className="border-t border-[var(--line)]/60 p-4">
+          <div className="flex items-center gap-3 rounded-xl bg-white/[0.03] border border-[var(--line)]/40 p-3">
+            <Avatar className="h-8 w-8 ring-2 ring-[var(--brand)]/20">
+              <AvatarFallback className="bg-gradient-to-br from-[var(--brand)] to-[var(--brand-strong)] text-[#06101d] text-xs font-bold">
                 IQ
               </AvatarFallback>
             </Avatar>
             <div className="flex flex-col">
               <span className="text-sm font-medium leading-none">Admin</span>
-              <span className="text-xs text-muted-foreground leading-none mt-1">
+              <span className="text-xs text-[var(--ink-soft)] leading-none mt-1">
                 admin@tesis-iq.com
               </span>
             </div>
@@ -106,12 +114,12 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
         </SidebarFooter>
       </Sidebar>
 
-      <main className="flex-1 flex flex-col min-h-screen bg-background">
-        <header className="flex h-14 items-center gap-4 border-b border-border/50 bg-card/50 backdrop-blur-sm px-6 sticky top-0 z-10">
-          <SidebarTrigger className="-ml-1" />
-          <Separator orientation="vertical" className="h-6" />
+      <main className="flex-1 flex flex-col min-h-screen">
+        <header className="flex h-16 items-center gap-4 glass-panel border-b border-[var(--line)] px-6 sticky top-0 z-10">
+          <SidebarTrigger className="-ml-1 text-[var(--ink-soft)] hover:text-white hover:bg-white/5" />
+          <Separator orientation="vertical" className="h-6 bg-[var(--line)]" />
           <div className="flex-1">
-            <h1 className="text-sm font-semibold text-foreground/80">
+            <h1 className="text-sm font-semibold text-white/80">
               {navItems.find((i) => i.url === pathname)?.title ?? "Dashboard"}
             </h1>
           </div>
