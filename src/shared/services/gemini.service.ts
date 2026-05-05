@@ -102,7 +102,19 @@ ${thesisContent}
 
 ---
 
-Por favor, revisa el proyecto de tesis adjunto de acuerdo a las indicaciones y el esquema proporcionados. Genera un informe detallado.`;
+INSTRUCCIONES DE FORMATO DE SALIDA (MUY IMPORTANTE):
+- Genera TODO el informe en formato Markdown válido.
+- Para las tablas, DEBES incluir la línea separadora entre el encabezado y las filas. Ejemplo:
+  | Columna 1 | Columna 2 | Columna 3 |
+  | --- | --- | --- |
+  | Dato 1 | Dato 2 | Dato 3 |
+- Usa **negrita** para resaltar hallazgos importantes, puntuaciones y títulos de secciones.
+- Usa ### para los títulos principales del informe y #### para subtítulos.
+- Usa listas con guiones (-) para enumerar hallazgos o errores.
+- Usa bloques de texto con > para citas o resúmenes destacados.
+- NO uses HTML dentro del markdown.
+
+Por favor, revisa el proyecto de tesis adjunto de acuerdo a las indicaciones y el esquema proporcionados. Genera un informe detallado y bien formateado.`;
 
   const model = genAI.getGenerativeModel({ model: MODEL_NAME });
 

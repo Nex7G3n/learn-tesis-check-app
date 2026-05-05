@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src
 import { Button } from "@/src/components/ui/button";
 import { Badge } from "@/src/components/ui/badge";
 import { Separator } from "@/src/components/ui/separator";
+import { MarkdownRenderer } from "@/src/components/markdown-renderer";
 
 export function UploadPage() {
   const {
@@ -235,9 +236,7 @@ export function UploadPage() {
           </CardHeader>
           <CardContent>
             <div className="max-h-[600px] overflow-y-auto rounded-lg border bg-muted/20 p-5">
-              <div className="prose prose-sm max-w-none whitespace-pre-wrap text-sm leading-relaxed text-foreground">
-                {analysisResult}
-              </div>
+              <MarkdownRenderer content={analysisResult} />
             </div>
           </CardContent>
         </Card>
