@@ -3,16 +3,13 @@
 import { useCallback, useEffect, useState } from "react";
 
 import type { UploadConfig } from "@/src/shared/services/thesis-review-api";
-import { analyzeThesisFile, fetchUploadConfig, uploadThesisFile } from "@/src/shared/services/thesis-review-api";
+import { analyzeThesisFile, fetchUploadConfig } from "@/src/shared/services/thesis-review-api";
 
 export function useThesisUpload() {
   const [config, setConfig] = useState<UploadConfig | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [uploading, setUploading] = useState(false);
-  const [uploadResult, setUploadResult] = useState<unknown | null>(null);
-  const [uploadError, setUploadError] = useState<string | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<string | null>(null);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
@@ -41,26 +38,9 @@ export function useThesisUpload() {
 
   const handleFileChange = useCallback((file: File | null) => {
     setSelectedFile(file);
-    setUploadResult(null);
-    setUploadError(null);
     setAnalysisResult(null);
     setAnalysisError(null);
   }, []);
-
-  const handleUpload = useCallback(async () => {
-    if (!selectedFile) return;
-
-    try {
-      setUploading(true);
-      setUploadError(null);
-      const result = await uploadThesisFile(selectedFile);
-      setUploadResult(result);
-    } catch (err) {
-      setUploadError(err instanceof Error ? err.message : "Error al subir");
-    } finally {
-      setUploading(false);
-    }
-  }, [selectedFile]);
 
   const handleAnalyze = useCallback(async () => {
     if (!selectedFile) return;
@@ -82,14 +62,10 @@ export function useThesisUpload() {
     loading,
     error,
     selectedFile,
-    uploading,
-    uploadResult,
-    uploadError,
     analyzing,
     analysisResult,
     analysisError,
     handleFileChange,
-    handleUpload,
     handleAnalyze,
   };
 }

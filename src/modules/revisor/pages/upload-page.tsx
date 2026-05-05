@@ -1,13 +1,12 @@
 "use client";
 
 import { type ChangeEvent } from "react";
-import { Upload, FileCheck, AlertCircle, Sparkles } from "lucide-react";
+import { Upload, FileCheck, AlertCircle, Sparkles, Loader2 } from "lucide-react";
 
 import { useThesisUpload } from "@/src/shared/application/hooks/use-thesis-upload";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src/components/ui/card";
 import { Button } from "@/src/components/ui/button";
 import { Badge } from "@/src/components/ui/badge";
-import { Separator } from "@/src/components/ui/separator";
 import { MarkdownRenderer } from "@/src/components/markdown-renderer";
 
 export function UploadPage() {
@@ -16,14 +15,10 @@ export function UploadPage() {
     loading,
     error,
     selectedFile,
-    uploading,
-    uploadResult,
-    uploadError,
     analyzing,
     analysisResult,
     analysisError,
     handleFileChange,
-    handleUpload,
     handleAnalyze,
   } = useThesisUpload();
 
@@ -55,11 +50,11 @@ export function UploadPage() {
       <div>
         <h2 className="text-2xl font-bold tracking-tight">Cargar tesis</h2>
         <p className="text-muted-foreground">
-          Sube un documento para iniciar el proceso de revisión.
+          Sube un documento para iniciar el proceso de revisión con IA.
         </p>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_0.6fr]">
+      <div className="grid gap-6">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -71,153 +66,96 @@ export function UploadPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-border bg-muted/30 px-6 py-12 text-center">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-                <Upload className="h-6 w-6 text-primary" />
+            {!selectedFile ? (
+              /* Área de carga — solo visible cuando NO hay archivo */
+              <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-border bg-muted/30 px-6 py-12 text-center">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+                  <Upload className="h-6 w-6 text-primary" />
+                </div>
+                <h3 className="mt-4 text-sm font-semibold">
+                  Arrastra tu tesis aquí
+                </h3>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  o haz clic para seleccionar un archivo
+                </p>
+                <input
+                  id="thesis-file"
+                  type="file"
+                  accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                  className="sr-only"
+                  onChange={onFileChange}
+                />
+                <Button
+                  variant="outline"
+                  type="button"
+                  className="mt-4"
+                  onClick={() => document.getElementById("thesis-file")?.click()}
+                >
+                  Elegir archivo
+                </Button>
               </div>
-              <h3 className="mt-4 text-sm font-semibold">
-                Arrastra tu tesis aquí
-              </h3>
-              <p className="mt-1 text-xs text-muted-foreground">
-                o haz clic para seleccionar un archivo
-              </p>
-              <input
-                id="thesis-file"
-                type="file"
-                accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                className="sr-only"
-                onChange={onFileChange}
-              />
-              <Button
-                variant="outline"
-                type="button"
-                className="mt-4"
-                onClick={() => document.getElementById("thesis-file")?.click()}
-              >
-                Elegir archivo
-              </Button>
-            </div>
+            ) : (
+              /* Archivo seleccionado + botón de revisión — centrado */
+              <div className="flex flex-col items-center justify-center py-8 space-y-6">
+                <div className="flex flex-col items-center gap-3">
+                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+                    <FileCheck className="h-8 w-8 text-primary" />
+                  </div>
+                  <div className="text-center">
+                    <p className="text-base font-medium">{selectedFile.name}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB
+                    </p>
+                  </div>
+                  <Badge variant="outline" className="mt-1">Listo para revisar</Badge>
+                </div>
 
-            {selectedFile && (
-              <div className="rounded-lg border bg-card p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <FileCheck className="h-5 w-5 text-primary" />
-                    <div>
-                      <p className="text-sm font-medium">{selectedFile.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB
-                      </p>
+                {!analyzing && !analysisResult && (
+                  <Button onClick={handleAnalyze} className="w-full max-w-sm" variant="default">
+                    <Sparkles className="h-4 w-4 mr-2" />
+                    Revisar con IA (Gemini)
+                  </Button>
+                )}
+
+                {/* Error de análisis */}
+                {analysisError && (
+                  <div className="w-full max-w-sm rounded-lg border border-red-200 bg-red-50 p-4 text-red-900">
+                    <div className="flex items-center gap-2">
+                      <AlertCircle className="h-4 w-4" />
+                      <p className="text-sm font-medium">Error en análisis: {analysisError}</p>
                     </div>
                   </div>
-                  <Badge variant="outline">Listo</Badge>
-                </div>
+                )}
               </div>
             )}
+          </CardContent>
+        </Card>
 
-            {!!uploadResult && (
-              <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-emerald-900">
-                <div className="flex items-center gap-2">
-                  <FileCheck className="h-4 w-4" />
-                  <p className="text-sm font-medium">
-                    Archivo subido correctamente
-                  </p>
-                </div>
+      </div>
+
+      {/* Animación de IA trabajando */}
+      {analyzing && (
+        <Card className="border-primary/20">
+          <CardContent className="flex flex-col items-center justify-center py-16">
+            <div className="relative">
+              <div className="absolute inset-0 rounded-full bg-primary/10 animate-ping" />
+              <div className="relative flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+                <Loader2 className="h-8 w-8 text-primary animate-spin" />
               </div>
-            )}
-
-            {uploadError && (
-              <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-900">
-                <div className="flex items-center gap-2">
-                  <AlertCircle className="h-4 w-4" />
-                  <p className="text-sm font-medium">Error: {uploadError}</p>
-                </div>
-              </div>
-            )}
-
-            {selectedFile && !uploadResult && !uploading && (
-              <Button onClick={handleUpload} className="w-full">
-                Subir archivo
-              </Button>
-            )}
-
-            {uploading && (
-              <Button disabled className="w-full">
-                Subiendo archivo...
-              </Button>
-            )}
-
-            {!!uploadResult && !analyzing && !analysisResult && (
-              <Button onClick={handleAnalyze} className="w-full" variant="default">
-                <Sparkles className="h-4 w-4 mr-2" />
-                Analizar con IA (Gemini)
-              </Button>
-            )}
-
-            {analyzing && (
-              <Button disabled className="w-full">
-                <Sparkles className="h-4 w-4 mr-2 animate-pulse" />
-                Analizando con Gemini... (puede tardar unos segundos)
-              </Button>
-            )}
-
-            {analysisError && (
-              <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-900">
-                <div className="flex items-center gap-2">
-                  <AlertCircle className="h-4 w-4" />
-                  <p className="text-sm font-medium">Error en análisis: {analysisError}</p>
-                </div>
-              </div>
-            )}
-
-            <Separator />
-
-            <div className="grid gap-3 sm:grid-cols-3">
-              <div className="rounded-lg border bg-muted/30 p-3">
-                <p className="text-xs font-semibold text-foreground">Formatos</p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  PDF, DOC y DOCX
-                </p>
-              </div>
-              <div className="rounded-lg border bg-muted/30 p-3">
-                <p className="text-xs font-semibold text-foreground">Entrega</p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Carga individual
-                </p>
-              </div>
-              <div className="rounded-lg border bg-muted/30 p-3">
-                <p className="text-xs font-semibold text-foreground">Destino</p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Flujo automatizado
-                </p>
-              </div>
+            </div>
+            <h3 className="mt-6 text-lg font-semibold">La IA está trabajando en tu documento</h3>
+            <p className="mt-2 text-sm text-muted-foreground text-center max-w-md">
+              Esto puede tardar unos segundos. Gemini está revisando la estructura, citas, formato y contenido de tu tesis.
+            </p>
+            <div className="mt-6 flex items-center gap-2 text-xs text-muted-foreground">
+              <Sparkles className="h-3 w-3 animate-pulse" />
+              <span>Analizando con Gemini 2.5 Flash...</span>
             </div>
           </CardContent>
         </Card>
+      )}
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Características</CardTitle>
-            <CardDescription>
-              Funcionalidades del módulo de carga
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {features.map((feature) => (
-              <div
-                key={feature.title}
-                className="rounded-lg border bg-muted/30 p-4"
-              >
-                <h4 className="text-sm font-semibold">{feature.title}</h4>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  {feature.description}
-                </p>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      </div>
-
+      {/* Resultado del análisis */}
       {analysisResult && (
         <Card>
           <CardHeader>
