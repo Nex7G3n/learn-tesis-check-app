@@ -1,0 +1,36 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
+import type { HomeData } from "@/src/shared/services/thesis-review-api";
+import { fetchHomeData } from "@/src/shared/services/thesis-review-api";
+
+export function useThesisHome() {
+  const [data, setData] = useState<HomeData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function load() {
+      try {
+        setLoading(true);
+        const result = await fetchHomeData();
+        if (!cancelled) setData(result);
+      } catch (err) {
+        if (!cancelled)
+          setError(err instanceof Error ? err.message : "Error desconocido");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return { data, loading, error };
+}

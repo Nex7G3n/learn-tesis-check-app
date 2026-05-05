@@ -5,7 +5,7 @@ import type {
   ReviewStage,
   UploadFeature,
   ValueMetric,
-} from "../domain/review-stage";
+} from "@/src/shared/domain/review-stage";
 
 export const reviewStages: ReviewStage[] = [
   {
