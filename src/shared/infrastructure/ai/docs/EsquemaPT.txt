@@ -1,0 +1,50 @@
+CUBIERTA CARÁTULA
+JURADO DICTAMINADOR ÍNDICE GENERAL
+INDICES COMPLEMENTARIOS (OPCIONAL)
+
+CAPITULO I: INTRODUCCIÓN 
+
+REFERENCIAS BIBLIOGRÁFICAS ANEXOS
+
+GUÍA PARA LA ELABORACIÓN DEL INFORME DE PROYECTO DE TESIS
+
+CONSIDERACIONES DE FORMA:
+El informe debe estar encuadernado con un Espiralado Plastificado de color Transparente de preferencia.
+En cuanto a los Márgenes debe ser 2.5cms (Superior, Inferior y Derecho) y 3cms (Izquierdo).
+En cuanto al Interlineado y Alineación debe ser 1.5 líneas (Interlineado) y Justificado Completo (Alineación).
+En cuanto al Tipo y Tamaño de Fuente debe ser Arial Narrow (Tipo de Fuente) y 12 puntos (Tamaño de Fuente).
+No hay Encabezado ni Pie de Página en el informe de proyecto de tesis.
+En cuanto a la Enumeración debe ser en Arábigo (contenido del informe), todo esto en la esquina inferior derecha; la Carátula no va enumerada.
+En cuanto a la Norma de Referencias y Citas Bibliográficas de ser APA.
+En cuanto a la ubicación del Formato (Declaración Jurada) va al final del informe debidamente firmado.
+En cuanto al Medio Digital: debe ser presentado en un CD/DVD rotulado interna y externamente, en formato PDF editable, todo en un único archivo.
+En cuanto al Medio Físico (Espiralado): debe coincidir absoluta y completamente con el medio digital.
+
+CONSIDERACIONES DE FONDO: CUBIERTA
+(debe estar encuadernado con el espiralado plastificado correspondiente, de preferencia usar color transparente).
+
+CARÁTULA
+(comprende el Logotipo de la Universidad Nacional de Trujillo, la Facultad y Escuela Profesional, Título de la Tesis, Apellidos y Nombres del Autor(es), Grado Académico
+
+[Doctor, Maestro o su equivalente extranjero] y Nombre Completo del Asesor, así como la Línea de Investigación del Programa de Estudios de acuerdo al Currículo Reformado 2018, la Ciudad de la Sede y el Año vigente; en cuanto al Título de la Tesis debe ser claro, conciso, no exceder de 20 palabras y con letra minúscula a excepción de nombres propios o caracteres especiales; en cuanto a los Apellidos y Nombres de los Autor(es), debe ser tal como se muestra en su DNI; en cuanto a los Apellidos y Nombres del Asesor, debe ser tal como se muestra en su DNI; en cuanto a La Línea de Investigación puede ser [Gestión de Gobierno y Servicios de TIC, Gestión de Proyectos de TIC, Gestión de Desarrollo de Software, Gestión de Infraestructura y Comunicaciones, Gestión de la Seguridad de la Información]; en cuanto a la Ciudad puede ser [Trujillo, Guadalupe u otra Ciudad de Sede Descentralizada].
+
+JURADO DICTAMINADOR
+(está conformado por tres profesores del Departamento de Ingeniería de Sistemas como sigue: un docente General/Especialista, un docente Especialista y un docente Metodólogo; en el rol de Presidente se tiene al docente General/Especialista, en el rol de Secretario se tiene al docente Metodólogo y en el rol de Vocal se tiene al docente Especialista, quién es a su vez el Asesor de la Tesis).
+(se debe colocar centrado el Grado Académico seguido del Nombre Completo de cada Jurado, uno debajo de otro, así como su rol correspondiente [Presidente, Secretario o Vocal] debidamente firmado por cada miembro).
+
+ÍNDICE GENERAL
+(debe ser autogenerado).
+
+ÍNDICES COMPLEMENTARIOS
+(es opcional y puede ser: Índice de Figuras [incluye Figuras, Imágenes, Ilustraciones, Gráficos o Fotografías], Índice de Tablas [incluye Tablas, Cuadros, Matrices o Esquemas] e Índice de Anexos).
+
+CAPITULO I: INTRODUCCIÓN
+(se redacta en prosa y sin subtítulos, esto incluye la Realidad Problemática [en el Contexto Social de lo general a específico y el Problema de Investigación para el área profesional], los Antecedentes del Problema [Artículos Científicos de revistas indexadas y Tesis en el
+
+ámbito Nacional e Internacional], el Marco Teórico [Teorías y Enfoques conceptuales relacionados al tema de investigación, así como la descripción detallada de 3 Metodologías Estándares alternativas para el desarrollo de la Solución Tecnológica Propuesta], la Justificación de la Investigación [teórica, práctica y metodológica], el Enunciado o Formulación del Problema [Interrogante o Pregunta], la Hipótesis, los Objetivos [General y Específicos] y las Limitaciones del Estudio [en el Aspecto espacio y tiempo]).
+
+REFERENCIAS BIBLIOGRÁFICAS
+(Lista de fuentes citadas en el trabajo de investigación de acuerdo a la norma APA V7, ordenadas alfabéticamente, como mínimo 30referencias, 80% del total de los últimos 5 años y el 20% del total de los últimos 10 años, 80% del total corresponde a artículos de revistas científicas indexadas y el 20% del total corresponde a libros [físicos y/o digitales]; así mismo, el 80% del total debe ser referencias en el idioma inglés).
+
+ANEXOS
+Anexo 1: Árbol de Problemas Anexo 2: Árbol de Objetivos

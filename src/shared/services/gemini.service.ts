@@ -9,35 +9,51 @@ const genAI = new GoogleGenerativeAI(API_KEY);
 
 const DOCS_DIR = path.join(process.cwd(), "src", "shared", "infrastructure", "ai", "docs");
 
+function readTextFile(filePath: string): string {
+  return fs.readFileSync(filePath, "utf-8");
+}
+
 async function extractTextFromDocxBuffer(buffer: Buffer): Promise<string> {
   const result = await mammoth.extractRawText({ buffer });
   return result.value;
 }
 
-async function extractTextFromDocx(filePath: string): Promise<string> {
-  const buffer = fs.readFileSync(filePath);
-  const result = await mammoth.extractRawText({ buffer });
-  return result.value;
-}
+function getPromptText(): string {
+  const txtPath = path.join(DOCS_DIR, "PROMPT.txt");
+  if (fs.existsSync(txtPath)) {
+    return readTextFile(txtPath);
+  }
 
-async function getPromptText(): Promise<string> {
-  const promptPath = path.join(DOCS_DIR, "PROMPT.docx");
-  if (!fs.existsSync(promptPath)) {
+  const docxPath = path.join(DOCS_DIR, "PROMPT.docx");
+  if (fs.existsSync(docxPath)) {
     throw new Error(
-      'No se encontró PROMPT.docx. Colócalo en src/shared/infrastructure/ai/docs/'
+      'Se encontró PROMPT.docx pero se requiere PROMPT.txt para mejor rendimiento. ' +
+      'Convierte tu archivo a texto plano (.txt) o colócalo como PROMPT.txt.'
     );
   }
-  return extractTextFromDocx(promptPath);
+
+  throw new Error(
+    'No se encontró PROMPT.txt. Colócalo en src/shared/infrastructure/ai/docs/'
+  );
 }
 
-async function getSchemaText(): Promise<string> {
-  const schemaPath = path.join(DOCS_DIR, "EsquemaPT.docx");
-  if (!fs.existsSync(schemaPath)) {
+function getSchemaText(): string {
+  const txtPath = path.join(DOCS_DIR, "EsquemaPT.txt");
+  if (fs.existsSync(txtPath)) {
+    return readTextFile(txtPath);
+  }
+
+  const docxPath = path.join(DOCS_DIR, "EsquemaPT.docx");
+  if (fs.existsSync(docxPath)) {
     throw new Error(
-      'No se encontró EsquemaPT.docx. Colócalo en src/shared/infrastructure/ai/docs/'
+      'Se encontró EsquemaPT.docx pero se requiere EsquemaPT.txt para mejor rendimiento. ' +
+      'Convierte tu archivo a texto plano (.txt) o colócalo como EsquemaPT.txt.'
     );
   }
-  return extractTextFromDocx(schemaPath);
+
+  throw new Error(
+    'No se encontró EsquemaPT.txt. Colócalo en src/shared/infrastructure/ai/docs/'
+  );
 }
 
 function isPdf(fileName: string): boolean {
@@ -59,10 +75,9 @@ export async function analyzeThesisWithGemini(
     throw new Error("GEMINI_API_KEY no está configurada en las variables de entorno");
   }
 
-  const [promptTemplate, schemaText] = await Promise.all([
-    getPromptText(),
-    getSchemaText(),
-  ]);
+  // Leer archivos de referencia (txt = lectura instantánea, sin procesamiento)
+  const promptTemplate = getPromptText();
+  const schemaText = getSchemaText();
 
   let thesisContent: string;
   let useInlineData = false;

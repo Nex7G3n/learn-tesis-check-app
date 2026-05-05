@@ -1,7 +1,7 @@
 "use client";
 
 import { type ChangeEvent } from "react";
-import { Upload, FileCheck, AlertCircle, Sparkles, Loader2 } from "lucide-react";
+import { Upload, FileCheck, AlertCircle, Sparkles, Loader2, FileText, Share2, Download, Save } from "lucide-react";
 
 import { useThesisUpload } from "@/src/shared/application/hooks/use-thesis-upload";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/src/components/ui/card";
@@ -54,84 +54,102 @@ export function UploadPage() {
         </p>
       </div>
 
-      <div className="grid gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Upload className="h-5 w-5" />
-              Subir documento
-            </CardTitle>
-            <CardDescription>
-              Arrastra tu archivo o selecciónalo desde tu dispositivo.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {!selectedFile ? (
-              /* Área de carga — solo visible cuando NO hay archivo */
-              <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-border bg-muted/30 px-6 py-12 text-center">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-                  <Upload className="h-6 w-6 text-primary" />
-                </div>
-                <h3 className="mt-4 text-sm font-semibold">
-                  Arrastra tu tesis aquí
-                </h3>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  o haz clic para seleccionar un archivo
-                </p>
-                <input
-                  id="thesis-file"
-                  type="file"
-                  accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                  className="sr-only"
-                  onChange={onFileChange}
-                />
-                <Button
-                  variant="outline"
-                  type="button"
-                  className="mt-4"
-                  onClick={() => document.getElementById("thesis-file")?.click()}
-                >
-                  Elegir archivo
-                </Button>
-              </div>
-            ) : (
-              /* Archivo seleccionado + botón de revisión — centrado */
-              <div className="flex flex-col items-center justify-center py-8 space-y-6">
-                <div className="flex flex-col items-center gap-3">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-                    <FileCheck className="h-8 w-8 text-primary" />
-                  </div>
-                  <div className="text-center">
-                    <p className="text-base font-medium">{selectedFile.name}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB
-                    </p>
-                  </div>
-                  <Badge variant="outline" className="mt-1">Listo para revisar</Badge>
-                </div>
+      {analysisResult && (
+        <div className="flex flex-wrap gap-3">
+          <Button variant="outline" size="sm">
+            <Share2 className="h-4 w-4 mr-2" />
+            Compartir
+          </Button>
+          <Button variant="outline" size="sm">
+            <Download className="h-4 w-4 mr-2" />
+            Exportar
+          </Button>
+          <Button variant="default" size="sm">
+            <Save className="h-4 w-4 mr-2" />
+            Guardar
+          </Button>
+        </div>
+      )}
 
-                {!analyzing && !analysisResult && (
+      {!analyzing && !analysisResult && (
+        <div className="grid gap-6">
+          <Card>
+            {!selectedFile && (
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Upload className="h-5 w-5" />
+                  Subir documento
+                </CardTitle>
+                <CardDescription>
+                  Arrastra tu archivo o selecciónalo desde tu dispositivo.
+                </CardDescription>
+              </CardHeader>
+            )}
+            <CardContent className="space-y-6">
+              {!selectedFile ? (
+                /* Área de carga — solo visible cuando NO hay archivo */
+                <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-border bg-muted/30 px-6 py-12 text-center">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+                    <Upload className="h-6 w-6 text-primary" />
+                  </div>
+                  <h3 className="mt-4 text-sm font-semibold">
+                    Arrastra tu tesis aquí
+                  </h3>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    o haz clic para seleccionar un archivo
+                  </p>
+                  <input
+                    id="thesis-file"
+                    type="file"
+                    accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                    className="sr-only"
+                    onChange={onFileChange}
+                  />
+                  <Button
+                    variant="outline"
+                    type="button"
+                    className="mt-4"
+                    onClick={() => document.getElementById("thesis-file")?.click()}
+                  >
+                    Elegir archivo
+                  </Button>
+                </div>
+              ) : (
+                /* Archivo seleccionado + botón de revisión — centrado */
+                <div className="flex flex-col items-center justify-center py-8 space-y-6">
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+                      <FileCheck className="h-8 w-8 text-primary" />
+                    </div>
+                    <div className="text-center">
+                      <p className="text-base font-medium">{selectedFile.name}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB
+                      </p>
+                    </div>
+                    <Badge variant="outline" className="mt-1">Listo para revisar</Badge>
+                  </div>
+
                   <Button onClick={handleAnalyze} className="w-full max-w-sm" variant="default">
                     <Sparkles className="h-4 w-4 mr-2" />
                     Revisar con IA (Gemini)
                   </Button>
-                )}
 
-                {/* Error de análisis */}
-                {analysisError && (
-                  <div className="w-full max-w-sm rounded-lg border border-red-200 bg-red-50 p-4 text-red-900">
-                    <div className="flex items-center gap-2">
-                      <AlertCircle className="h-4 w-4" />
-                      <p className="text-sm font-medium">Error en análisis: {analysisError}</p>
+                  {/* Error de análisis */}
+                  {analysisError && (
+                    <div className="w-full max-w-sm rounded-lg border border-red-200 bg-red-50 p-4 text-red-900">
+                      <div className="flex items-center gap-2">
+                        <AlertCircle className="h-4 w-4" />
+                        <p className="text-sm font-medium">Error en análisis: {analysisError}</p>
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-      </div>
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* Animación de IA trabajando */}
       {analyzing && (
@@ -169,7 +187,12 @@ export function UploadPage() {
                   Revisión generada por IA basada en tu prompt y esquema
                 </CardDescription>
               </div>
-              <Badge variant="secondary">IA</Badge>
+              <div className="flex items-center gap-2 rounded-full border bg-muted/50 px-4 py-2">
+                <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
+                <span className="text-sm font-medium truncate max-w-[180px]" title={selectedFile?.name}>
+                  {selectedFile?.name}
+                </span>
+              </div>
             </div>
           </CardHeader>
           <CardContent>
