@@ -27,6 +27,7 @@ import { Badge } from "@/src/components/ui/badge";
 import { Input } from "@/src/components/ui/input";
 import { Label } from "@/src/components/ui/label";
 import { MarkdownRenderer } from "@/src/components/markdown-renderer";
+import { exportMarkdownToPdf, pdfFilenameFromBasename } from "@/src/shared/utils/export-markdown-pdf";
 
 export function UploadPage() {
   const {
@@ -58,6 +59,7 @@ export function UploadPage() {
   } = useThesisUpload();
 
   const [selectedAlumnoId, setSelectedAlumnoId] = useState("");
+  const [exportingPdf, setExportingPdf] = useState(false);
 
   const onFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0] ?? null;
@@ -68,6 +70,18 @@ export function UploadPage() {
     if (!selectedAlumnoId) return;
     handleAgregarAlumnoExistente(selectedAlumnoId);
     setSelectedAlumnoId("");
+  };
+
+  const handleExportPdf = async () => {
+    if (!analysisResult || exportingPdf) return;
+    try {
+      setExportingPdf(true);
+      await exportMarkdownToPdf(analysisResult, pdfFilenameFromBasename(selectedFile?.name));
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setExportingPdf(false);
+    }
   };
 
   if (loading) {
@@ -376,10 +390,16 @@ export function UploadPage() {
             <Button
               variant="outline"
               size="sm"
-              className="border-[var(--line)] bg-white/5 hover:bg-white/10 text-white/80 rounded-xl"
+              disabled={exportingPdf}
+              onClick={handleExportPdf}
+              className="border-[var(--line)] bg-white/5 hover:bg-white/10 text-white/80 rounded-xl disabled:opacity-50"
             >
-              <FileText className="h-4 w-4 mr-2" />
-              Exportar PDF
+              {exportingPdf ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <FileText className="h-4 w-4 mr-2" />
+              )}
+              {exportingPdf ? "Generando PDF..." : "Exportar PDF"}
             </Button>
 
             <Button

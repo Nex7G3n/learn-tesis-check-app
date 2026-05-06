@@ -13,13 +13,18 @@ import {
   Download,
   User,
   Mail,
-  ExternalLink,
 } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/src/components/ui/card";
 import { Badge } from "@/src/components/ui/badge";
 import { Button } from "@/src/components/ui/button";
+import { Input } from "@/src/components/ui/input";
 import { MarkdownRenderer } from "@/src/components/markdown-renderer";
+import {
+  exportMarkdownToPdf,
+  exportMarkdownToPdfArrayBuffer,
+  pdfFilenameFromBasename,
+} from "@/src/shared/utils/export-markdown-pdf";
 
 interface Alumno {
   id: string;
@@ -49,6 +54,11 @@ export function TesisDetailPage({ id }: { id: string }) {
   const [tesis, setTesis] = useState<Tesis | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [exportingPdf, setExportingPdf] = useState(false);
+  const [sendingEmail, setSendingEmail] = useState(false);
+  const [emailToSend, setEmailToSend] = useState("");
+  const [emailMessage, setEmailMessage] = useState<string | null>(null);
+  const [emailError, setEmailError] = useState<string | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -58,6 +68,7 @@ export function TesisDetailPage({ id }: { id: string }) {
         if (!res.ok) throw new Error("Error cargando tesis");
         const data = await res.json();
         setTesis(data.tesis ?? null);
+        setEmailToSend(data.tesis?.alumnos?.[0]?.correo ?? "");
       } catch (err) {
         setError(err instanceof Error ? err.message : "Error desconocido");
       } finally {
@@ -66,6 +77,68 @@ export function TesisDetailPage({ id }: { id: string }) {
     }
     load();
   }, [id]);
+
+  const toBase64 = (buffer: ArrayBuffer): string => {
+    let binary = "";
+    const bytes = new Uint8Array(buffer);
+    const chunkSize = 0x8000;
+    for (let i = 0; i < bytes.length; i += chunkSize) {
+      const chunk = bytes.subarray(i, i + chunkSize);
+      binary += String.fromCharCode(...chunk);
+    }
+    return btoa(binary);
+  };
+
+  const handleExportPdf = async () => {
+    const resultado = tesis?.analisis?.resultado;
+    if (!resultado || exportingPdf) return;
+    try {
+      setExportingPdf(true);
+      await exportMarkdownToPdf(resultado, pdfFilenameFromBasename(tesis?.archivo_nombre));
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setExportingPdf(false);
+    }
+  };
+
+  const handleSendEmail = async () => {
+    const resultado = tesis?.analisis?.resultado;
+    if (!resultado || sendingEmail) return;
+
+    try {
+      setSendingEmail(true);
+      setEmailMessage(null);
+      setEmailError(null);
+
+      const fileName = pdfFilenameFromBasename(tesis?.archivo_nombre);
+      const pdfArrayBuffer = await exportMarkdownToPdfArrayBuffer(resultado, fileName);
+      const pdfBase64 = toBase64(pdfArrayBuffer);
+
+      const response = await fetch("/api/tesis/send-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          toEmail: emailToSend,
+          tesisId: tesis?.id,
+          tesisTitle: tesis?.titulo ?? tesis?.archivo_nombre,
+          fileName,
+          pdfBase64,
+        }),
+      });
+
+      const json = (await response.json()) as { error?: string; success?: boolean };
+      if (!response.ok || !json.success) {
+        throw new Error(json.error ?? "No se pudo enviar el correo");
+      }
+
+      setEmailMessage("Correo enviado correctamente.");
+    } catch (e) {
+      setEmailError(e instanceof Error ? e.message : "No se pudo enviar el correo");
+    } finally {
+      setSendingEmail(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -132,8 +205,8 @@ export function TesisDetailPage({ id }: { id: string }) {
               rel="noopener noreferrer"
               className="text-xs text-[var(--brand)] hover:underline flex items-center gap-1 mt-1"
             >
-              <ExternalLink className="h-3 w-3" />
-              Ver en Supabase
+              <Download className="h-3 w-3" />
+              Descargar archivo
             </a>
           </CardContent>
         </Card>
@@ -246,14 +319,48 @@ export function TesisDetailPage({ id }: { id: string }) {
               <Button
                 variant="outline"
                 size="sm"
-                className="border-[var(--line)] bg-white/5 hover:bg-white/10 text-white/80 rounded-xl"
+                disabled={exportingPdf}
+                onClick={handleExportPdf}
+                className="border-[var(--line)] bg-white/5 hover:bg-white/10 text-white/80 rounded-xl disabled:opacity-50"
               >
-                <Download className="h-4 w-4 mr-2" />
-                Exportar
+                {exportingPdf ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <Download className="h-4 w-4 mr-2" />
+                )}
+                {exportingPdf ? "Generando..." : "Exportar PDF"}
               </Button>
             </div>
           </CardHeader>
           <CardContent>
+            <div className="mb-4 rounded-xl border border-[var(--line)] bg-white/[0.03] p-4 space-y-3">
+              <p className="text-sm text-white/90 font-medium">Enviar análisis por correo</p>
+              <div className="flex gap-2 flex-wrap">
+                <Input
+                  type="email"
+                  value={emailToSend}
+                  onChange={(event) => setEmailToSend(event.target.value)}
+                  placeholder="correo@ejemplo.com"
+                  className="min-w-[240px] flex-1"
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={sendingEmail || !emailToSend.trim()}
+                  onClick={handleSendEmail}
+                  className="border-[var(--line)] bg-white/5 hover:bg-white/10 text-white/80 rounded-xl disabled:opacity-50"
+                >
+                  {sendingEmail ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Mail className="h-4 w-4 mr-2" />
+                  )}
+                  {sendingEmail ? "Enviando..." : "Enviar por correo"}
+                </Button>
+              </div>
+              {emailMessage ? <p className="text-xs text-emerald-400">{emailMessage}</p> : null}
+              {emailError ? <p className="text-xs text-red-400">{emailError}</p> : null}
+            </div>
             <div className="max-h-[600px] overflow-y-auto rounded-xl border border-[var(--line)] bg-[#060e1a]/80 p-6 analysis-content">
               <MarkdownRenderer content={tesis.analisis.resultado} />
             </div>

@@ -3,9 +3,7 @@ import mammoth from "mammoth";
 import * as fs from "fs";
 import * as path from "path";
 
-const API_KEY = process.env.GEMINI_API_KEY ?? "";
 const MODEL_NAME = process.env.GEMINI_MODEL ?? "gemini-2.5-flash";
-const genAI = new GoogleGenerativeAI(API_KEY);
 
 const DOCS_DIR = path.join(process.cwd(), "src", "shared", "infrastructure", "ai", "docs");
 
@@ -69,11 +67,13 @@ function isDocx(fileName: string): boolean {
 
 export async function analyzeThesisWithGemini(
   fileBuffer: Buffer,
-  fileName: string
+  fileName: string,
+  apiKey: string
 ): Promise<string> {
-  if (!API_KEY) {
+  if (!apiKey) {
     throw new Error("GEMINI_API_KEY no está configurada en las variables de entorno");
   }
+  const genAI = new GoogleGenerativeAI(apiKey);
 
   // Leer archivos de referencia (txt = lectura instantánea, sin procesamiento)
   const promptTemplate = getPromptText();

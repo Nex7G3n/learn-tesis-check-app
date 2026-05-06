@@ -1,9 +1,16 @@
 import { NextResponse } from "next/server";
 
 import { analyzeThesisWithGemini } from "@/src/shared/services/gemini.service";
+import { getAuthenticatedUser } from "@/src/shared/services/auth.service";
+import { getDecryptedUserApiKey } from "@/src/shared/services/user-api-key.service";
 
 export async function POST(request: Request) {
   try {
+    const user = await getAuthenticatedUser();
+    if (!user) {
+      return NextResponse.json({ error: "No autenticado" }, { status: 401 });
+    }
+
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
     const tesisId = (formData.get("tesis_id") as string | null) ?? undefined;
@@ -39,7 +46,21 @@ export async function POST(request: Request) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    const analysis = await analyzeThesisWithGemini(buffer, file.name);
+    const userApiKey = await getDecryptedUserApiKey(user.id);
+    const fallbackApiKey = process.env.GEMINI_API_KEY ?? "";
+    const apiKeyToUse = userApiKey ?? fallbackApiKey;
+
+    if (!apiKeyToUse) {
+      return NextResponse.json(
+        {
+          error:
+            "No hay API key configurada para este usuario. Ve a Configurar API key antes de analizar.",
+        },
+        { status: 400 }
+      );
+    }
+
+    const analysis = await analyzeThesisWithGemini(buffer, file.name, apiKeyToUse);
 
     return NextResponse.json({
       success: true,
@@ -47,7 +68,7 @@ export async function POST(request: Request) {
       tesis_id: tesisId,
     });
   } catch (error) {
-    console.error("Error en análisis con Gemini:", error);
+    console.error("Error en análisis con Gemini");
     return NextResponse.json(
       {
         error:

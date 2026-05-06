@@ -6,6 +6,8 @@ import {
   CheckCircle,
   Upload,
   GraduationCap,
+  KeyRound,
+  LogOut,
 } from "lucide-react";
 
 import {
@@ -24,6 +26,8 @@ import {
 } from "@/src/components/ui/sidebar";
 import { Separator } from "@/src/components/ui/separator";
 import { Avatar, AvatarFallback } from "@/src/components/ui/avatar";
+import { createSupabaseBrowserClient } from "@/src/shared/infrastructure/supabase/client";
+import { Button } from "@/src/components/ui/button";
 
 const navItems = [
   {
@@ -50,6 +54,12 @@ const navItems = [
 
 export function AppSidebar({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+
+  async function handleLogout() {
+    const supabase = createSupabaseBrowserClient();
+    await supabase.auth.signOut();
+    window.location.href = "/login";
+  }
 
   return (
     <SidebarProvider>
@@ -101,21 +111,54 @@ export function AppSidebar({ children }: { children: React.ReactNode }) {
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
+          <SidebarGroup className="mt-auto pb-3">
+            <SidebarGroupContent className="px-3">
+              <SidebarMenu className="gap-1">
+                <SidebarMenuItem>
+                  <Link href="/configuracion/api-key" className="w-full">
+                    <SidebarMenuButton
+                      isActive={pathname === "/configuracion/api-key"}
+                      tooltip="Configurar API key"
+                      className={`h-10 rounded-xl transition-all duration-200 ${
+                        pathname === "/configuracion/api-key"
+                          ? "bg-[var(--brand)]/15 text-[var(--brand)] shadow-sm"
+                          : "text-[var(--ink-soft)] hover:bg-white/5 hover:text-white"
+                      }`}
+                    >
+                      <KeyRound className="h-[18px] w-[18px]" />
+                      <span className="text-sm font-medium">Configurar API key</span>
+                    </SidebarMenuButton>
+                  </Link>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
         </SidebarContent>
 
         <SidebarFooter className="border-t border-[var(--line)]/60 p-4">
-          <div className="flex items-center gap-3 rounded-xl bg-white/[0.03] border border-[var(--line)]/40 p-3">
-            <Avatar className="h-8 w-8 ring-2 ring-[var(--brand)]/20">
-              <AvatarFallback className="bg-gradient-to-br from-[var(--brand)] to-[var(--brand-strong)] text-[#06101d] text-xs font-bold">
-                IQ
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex flex-col">
-              <span className="text-sm font-medium leading-none">Admin</span>
-              <span className="text-xs text-[var(--ink-soft)] leading-none mt-1">
-                admin@tesis-iq.com
-              </span>
+          <div className="space-y-3">
+            <div className="flex items-center gap-3 rounded-xl bg-white/[0.03] border border-[var(--line)]/40 p-3">
+              <Avatar className="h-8 w-8 ring-2 ring-[var(--brand)]/20">
+                <AvatarFallback className="bg-gradient-to-br from-[var(--brand)] to-[var(--brand-strong)] text-[#06101d] text-xs font-bold">
+                  IQ
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex flex-col">
+                <span className="text-sm font-medium leading-none">Admin</span>
+                <span className="text-xs text-[var(--ink-soft)] leading-none mt-1">
+                  Sesión activa
+                </span>
+              </div>
             </div>
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full justify-start gap-2"
+              onClick={handleLogout}
+            >
+              <LogOut className="h-4 w-4" />
+              Cerrar sesión
+            </Button>
           </div>
         </SidebarFooter>
       </Sidebar>

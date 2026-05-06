@@ -9,7 +9,8 @@ interface MarkdownRendererProps {
  * Detecta y arregla tablas mal formateadas en markdown.
  * Gemini genera tablas sin la línea separadora o todo en una línea.
  */
-function fixGeminiTables(text: string): string {
+/** Normaliza tablas mal formateadas que suele devolver Gemini (reutilizable p. ej. en exportación PDF). */
+export function fixGeminiTables(text: string): string {
   // Normalizar saltos de línea
   let result = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
 
