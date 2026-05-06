@@ -18,6 +18,7 @@ import {
   CheckCircle2,
   ChevronDown,
   Share2,
+  Send,
 } from "lucide-react";
 
 import { useThesisUpload } from "@/src/shared/application/hooks/use-thesis-upload";
@@ -26,8 +27,16 @@ import { Button } from "@/src/components/ui/button";
 import { Badge } from "@/src/components/ui/badge";
 import { Input } from "@/src/components/ui/input";
 import { Label } from "@/src/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/src/components/ui/dialog";
 import { MarkdownRenderer } from "@/src/components/markdown-renderer";
-import { exportMarkdownToPdf, pdfFilenameFromBasename } from "@/src/shared/utils/export-markdown-pdf";
+import { exportMarkdownToPdfArrayBuffer, pdfFilenameFromBasename } from "@/src/shared/utils/export-markdown-pdf";
 
 export function UploadPage() {
   const {
@@ -61,6 +70,12 @@ export function UploadPage() {
   const [selectedAlumnoId, setSelectedAlumnoId] = useState("");
   const [exportingPdf, setExportingPdf] = useState(false);
 
+  // Modal compartir
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [sharing, setSharing] = useState(false);
+  const [shareSuccess, setShareSuccess] = useState(false);
+  const [shareError, setShareError] = useState<string | null>(null);
+
   const onFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0] ?? null;
     handleFileChange(file);
@@ -76,11 +91,72 @@ export function UploadPage() {
     if (!analysisResult || exportingPdf) return;
     try {
       setExportingPdf(true);
+      const { exportMarkdownToPdf } = await import("@/src/shared/utils/export-markdown-pdf");
       await exportMarkdownToPdf(analysisResult, pdfFilenameFromBasename(selectedFile?.name));
     } catch (e) {
       console.error(e);
     } finally {
       setExportingPdf(false);
+    }
+  };
+
+  const handleSendEmail = async () => {
+    if (!analysisResult || !selectedFile || alumnosSeleccionados.length === 0) return;
+
+    try {
+      setSharing(true);
+      setShareError(null);
+      setShareSuccess(false);
+
+      // Generar PDF como ArrayBuffer
+      const pdfBuffer = await exportMarkdownToPdfArrayBuffer(
+        analysisResult,
+        pdfFilenameFromBasename(selectedFile.name)
+      );
+
+      // Convertir a base64
+      const pdfBase64 = btoa(
+        new Uint8Array(pdfBuffer).reduce((data, byte) => data + String.fromCharCode(byte), "")
+      );
+
+      const tesisTitle = selectedFile.name.replace(/\.(pdf|docx?)$/i, "");
+      const fileName = pdfFilenameFromBasename(selectedFile.name);
+
+      // Enviar a cada alumno
+      const correos = alumnosSeleccionados.map((a) => a.correo);
+      const results = await Promise.allSettled(
+        correos.map(async (toEmail) => {
+          const res = await fetch("/api/tesis/send-email", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              toEmail,
+              tesisTitle,
+              fileName,
+              pdfBase64,
+            }),
+          });
+          if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.error || `Error enviando a ${toEmail}`);
+          }
+          return toEmail;
+        })
+      );
+
+      const fallos = results
+        .filter((r): r is PromiseRejectedResult => r.status === "rejected")
+        .map((r) => r.reason instanceof Error ? r.reason.message : String(r.reason));
+
+      if (fallos.length > 0) {
+        setShareError(`Errores: ${fallos.join("; ")}`);
+      } else {
+        setShareSuccess(true);
+      }
+    } catch (err) {
+      setShareError(err instanceof Error ? err.message : "Error al enviar correos");
+    } finally {
+      setSharing(false);
     }
   };
 
@@ -405,10 +481,16 @@ export function UploadPage() {
             <Button
               variant="outline"
               size="sm"
-              className="border-[var(--line)] bg-white/5 hover:bg-white/10 text-white/80 rounded-xl"
+              onClick={() => setShowShareModal(true)}
+              disabled={sharing}
+              className="border-[var(--line)] bg-white/5 hover:bg-white/10 text-white/80 rounded-xl disabled:opacity-50"
             >
-              <Share2 className="h-4 w-4 mr-2" />
-              Compartir
+              {sharing ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Share2 className="h-4 w-4 mr-2" />
+              )}
+              {sharing ? "Enviando..." : "Compartir"}
             </Button>
 
             <Button
@@ -462,6 +544,83 @@ export function UploadPage() {
           </Card>
         </div>
       )}
+
+      {/* Modal Compartir */}
+      <Dialog open={showShareModal} onOpenChange={setShowShareModal}>
+        <DialogContent className="bg-[#0d1c31] border-[var(--line)] text-white sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-white flex items-center gap-2">
+              <Share2 className="h-5 w-5 text-[var(--brand)]" />
+              Compartir análisis
+            </DialogTitle>
+            <DialogDescription className="text-[var(--ink-soft)]">
+              Se enviará el informe en PDF a los siguientes correos:
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3 py-2">
+            {alumnosSeleccionados.map((a, i) => (
+              <div
+                key={`${a.correo}-${i}`}
+                className="flex items-center gap-3 rounded-xl border border-[var(--line)] bg-white/[0.03] px-4 py-3"
+              >
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--brand)]/20 ring-1 ring-[var(--brand)]/30">
+                  <Mail className="h-4 w-4 text-[var(--brand)]" />
+                </div>
+                <div className="flex flex-col min-w-0">
+                  <span className="text-sm font-medium text-white truncate">{a.nombre}</span>
+                  <span className="text-xs text-[var(--ink-soft)] truncate">{a.correo}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {shareSuccess && (
+            <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3 text-emerald-400 text-sm">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4 shrink-0" />
+                Correos enviados correctamente
+              </div>
+            </div>
+          )}
+
+          {shareError && (
+            <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-red-300 text-sm">
+              <div className="flex items-center gap-2">
+                <AlertCircle className="h-4 w-4 shrink-0" />
+                {shareError}
+              </div>
+            </div>
+          )}
+
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowShareModal(false);
+                setShareSuccess(false);
+                setShareError(null);
+              }}
+              className="border-[var(--line)] bg-white/5 hover:bg-white/10 text-white hover:text-white rounded-xl"
+            >
+              <X className="h-4 w-4 mr-2" />
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleSendEmail}
+              disabled={sharing || shareSuccess}
+              className="bg-[var(--brand)] text-[#06101d] hover:bg-[var(--brand-strong)] rounded-xl font-semibold disabled:opacity-50"
+            >
+              {sharing ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Send className="h-4 w-4 mr-2" />
+              )}
+              {sharing ? "Enviando..." : shareSuccess ? "Enviado" : "Enviar correos"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
