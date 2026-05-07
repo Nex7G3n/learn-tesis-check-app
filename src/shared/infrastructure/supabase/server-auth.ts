@@ -13,9 +13,16 @@ export async function createSupabaseServerAuthClient() {
         return cookieStore.getAll();
       },
       setAll(cookiesToSet) {
-        cookiesToSet.forEach(({ name, value, options }) => {
-          cookieStore.set(name, value, options);
-        });
+        try {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            cookieStore.set(name, value, options);
+          });
+        } catch {
+          // The `setAll` method can be called from a Server Component or
+          // during static rendering where `cookieStore.set` is not allowed.
+          // This is safe to ignore — cookies will be set on the client
+          // or during the next request/response cycle.
+        }
       },
     },
   });

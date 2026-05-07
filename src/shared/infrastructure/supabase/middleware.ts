@@ -28,19 +28,31 @@ export async function updateSession(request: NextRequest) {
     },
   });
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  let user = null;
+  try {
+    const { data } = await supabase.auth.getUser();
+    user = data.user;
+  } catch {
+    // Silenciar error de refresh token no encontrado
+    user = null;
+  }
 
-  const isProtectedRoute =
-    request.nextUrl.pathname.startsWith("/api/analyze") ||
-    request.nextUrl.pathname.startsWith("/api/settings") ||
+  // Páginas protegidas: redirigen a login si no hay sesión
+  const isProtectedPage =
     request.nextUrl.pathname.startsWith("/cargar-tesis") ||
     request.nextUrl.pathname.startsWith("/registros-respuesta") ||
     request.nextUrl.pathname.startsWith("/tesistas") ||
+    request.nextUrl.pathname.startsWith("/configuracion") ||
     request.nextUrl.pathname === "/";
 
-  if (!user && isProtectedRoute) {
+  // API routes protegidas: no redirigen, pero requieren sesión para funcionar
+  const isProtectedApi =
+    request.nextUrl.pathname.startsWith("/api/analyze") ||
+    request.nextUrl.pathname.startsWith("/api/settings") ||
+    request.nextUrl.pathname.startsWith("/api/tesis/send-email") ||
+    request.nextUrl.pathname.startsWith("/api/upload");
+
+  if (!user && isProtectedPage) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.searchParams.set("redirectedFrom", request.nextUrl.pathname);

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/src/shared/services/auth.service";
-import { getUserApiKeyStatus, saveUserApiKey } from "@/src/shared/services/user-api-key.service";
+import { getDecryptedUserApiKey, getUserApiKeyStatus, saveUserApiKey } from "@/src/shared/services/user-api-key.service";
 
 const GEMINI_KEY_REGEX = /^AIza[0-9A-Za-z\-_]{20,}$/;
 
@@ -12,7 +12,8 @@ export async function GET() {
     }
 
     const status = await getUserApiKeyStatus(user.id);
-    return NextResponse.json(status);
+    const apiKey = await getDecryptedUserApiKey(user.id);
+    return NextResponse.json({ ...status, apiKey });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "Error interno";
     return NextResponse.json({ error: errorMessage }, { status: 500 });
